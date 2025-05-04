@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Age and Gender Detection</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Age & Gender Detection</h1>
+
+        <div class="options">
+            <button onclick="document.getElementById('imageUpload').click()">Upload Image</button>
+            <input type="file" id="imageUpload" accept="image/*" onchange="uploadImage()" hidden>
+            <button onclick="startWebCam()">Use Webcam</button>
+        </div>
+
+        <div id="video" style="display:none;">
+            <img src="{{ url_for('video_feed') }}" width="640" height="480" />
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function uploadImage() {
+            const input = document.getElementById('imageUpload');
+            const file = input.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            }).then(res => res.json()).then(data => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '';
+
+                if (data.results.length === 0) {
+                    resultDiv.innerHTML = '<p>No face detected.</p>';
+                } else {
+                    data.results.forEach(item => {
+                        resultDiv.innerHTML += `<p>Gender: <b>${item.gender}</b>, Age: <b>${item.age}</b></p>`;
+                    });
+                }
+            });
+        }
+
+        function startWebCam() {
+            document.getElementById('video').style.display = 'block';
+            document.getElementById('result').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
